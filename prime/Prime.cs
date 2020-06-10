@@ -6,13 +6,11 @@ namespace avast
 {
     public class Prime
     {
-        /**
-         * 
-         */
         public List<int> GetPrimes (int numberOfPrimes)
         {
             // prime gap analysis (https://en.wikipedia.org/wiki/Prime_gap) indicates avg tends towards e^(-k). Would need 
-            // to factorize this and my maths are not good enough. squaring the number appears to give a high enough bound
+            // to factorize this, but also is an average and so would need to know max bound. 
+            // Squaring the number appears to give a high enough bound
             // however, as we're going significantly past the limit, the performace saving of GetSieveOfEratosthenes
             // becomes less and so IncrementalSieveOfEratosthenes becomes more appealing
             // return GetSieveOfEratosthenes(numberOfPrimes * numberOfPrimes).Take(numberOfPrimes);
@@ -24,35 +22,37 @@ namespace avast
          * Implementation for IncrementalSieveOfEratosthenes based on code article
          * https://www.codevamping.com/2019/01/incremental-sieve-of-eratosthenes/ pseduoalgorithm
          */
-        public List<int> IncrementalSieveOfEratosthenes (int numberOfPrimes)
+        private List<int> IncrementalSieveOfEratosthenes (int numberOfPrimes)
         {
-            if (numberOfPrimes < 2) {
-                throw new ArgumentException("IncrementalSieveOfEratosthenes must be >= 2");
+            if (numberOfPrimes < 1) {
+                throw new ArgumentOutOfRangeException("IncrementalSieveOfEratosthenes must be >= 1");
             }
 
-            var set = new Dictionary<int, int>();
+            // Key is the prime, Value is a Multiple of the Prime closest to current count
+            var incrementalSieve = new Dictionary<int, int>();
 
             var i = 2;
-            while (set.Count < numberOfPrimes) {
+            while (incrementalSieve.Count < numberOfPrimes) {
                 var isPrime = true;
-                foreach (var prime in set.Keys.ToList()) {
-                    while (set[prime] < i) {
-                        set[prime] += prime;
+                foreach (var prime in incrementalSieve.Keys.ToList()) {
+                    while (incrementalSieve[prime] < i) {
+                        incrementalSieve[prime] += prime;
                     }
-                    if (set[prime]== i) {
+
+                    if (incrementalSieve[prime]== i) {
                         isPrime = false;
                         break;
                     }
                 }
 
                 if (isPrime) {
-                    set.Add(i, i);
+                    incrementalSieve.Add(i, i);
                 }
 
                 i++;
             }
 
-            var results = set.Select(item => item.Key).ToList();
+            var results = incrementalSieve.Select(item => item.Key).ToList();
             return results;
         }
         
@@ -60,26 +60,27 @@ namespace avast
          * Implementation for GetSieveOfEratosthenes based on Wikipedia pseduoalgorithm
          * https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes
          */
-        public List<int> GetSieveOfEratosthenes (int limit)
+        private List<int> GetSieveOfEratosthenes (int limit)
         {
             if (limit < 2) {
                 throw new ArgumentException("GetSieveOfEratosthenes must be >= 2");
             }
 
-            var set = new Dictionary<int, bool>();
+            // Key is the possible prime; Value indicates if the Key is prime or not
+            var sieve = new Dictionary<int, bool>();
             for (var i = 2; i <= limit; i++) {
-                set.Add(i, true);
+                sieve.Add(i, true);
             }
 
             for (var i = 2; i <= Math.Floor(Math.Sqrt(limit)); i++) {
-                if (set[i]) {
+                if (sieve[i]) {
                     for (var j = i * i; j < limit; j += i) {
-                        set[j] = false;
+                        sieve[j] = false;
                     }
                 }
             }
 
-            var results = set.Where(item => item.Value).Select(item => item.Key).ToList();
+            var results = sieve.Where(item => item.Value).Select(item => item.Key).ToList();
             return results;
         }
     }

@@ -15,6 +15,7 @@ namespace avast
 
             var prime = new Prime();
             var primes = prime.GetPrimes(n + 1);
+
             string[] cols = { "Primes" };
             var table = new ConsoleTable(cols.Concat(primes.Select(i => i.ToString()).ToArray()).ToArray());
             foreach (var i in primes) {
@@ -23,8 +24,10 @@ namespace avast
                 foreach (var j in primes) {
                     row.Add((i * j).ToString());
                 }
+                
                 table.AddRow(row.ToArray());
             }
+
             table.Write();
         }
     }
